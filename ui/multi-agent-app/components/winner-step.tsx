@@ -1,11 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Trophy, CheckCircle } from "lucide-react";
+import { Trophy, CheckCircle, Download, Code } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import type { Submission } from "@/lib/types";
+import { downloadImage, downloadCode } from "@/lib/download";
 
 interface WinnerStepProps {
   prompt: string;
@@ -46,7 +48,16 @@ export function WinnerStep({ prompt, winner, onStartOver }: WinnerStepProps) {
             className="rounded-xl border overflow-hidden bg-card"
           >
             <div className="relative aspect-video bg-muted min-h-[200px]">
-              {winner.asset_url ? (
+              {winner.code ? (
+                <div className="absolute inset-0 overflow-hidden">
+                  <iframe
+                    srcDoc={winner.code}
+                    title={`Winner by ${winner.agent_name ?? winner.agent_id}`}
+                    sandbox="allow-scripts"
+                    className="absolute top-0 left-0 w-[400%] h-[400%] border-0 origin-top-left scale-[0.25]"
+                  />
+                </div>
+              ) : winner.asset_url ? (
                 <>
                   {winner.asset_url.startsWith("data:") ? (
                     <img
@@ -74,24 +85,57 @@ export function WinnerStep({ prompt, winner, onStartOver }: WinnerStepProps) {
                   No preview
                 </div>
               )}
-              <div className="absolute bottom-4 left-4 right-4 flex items-center gap-2">
+              <div className="absolute bottom-4 left-4 right-4 flex items-center gap-2 flex-wrap">
                 <CheckCircle className="size-5 text-green-500 shrink-0" />
                 <span className="font-semibold text-foreground">
-                  {winner.agent_name ?? winner.agent_id}
+                  {winner.persona ?? winner.agent_name ?? winner.agent_id}
                 </span>
+                {winner.score != null && (
+                  <Badge variant="secondary" className="shrink-0">
+                    {(winner.score * 20).toFixed(0)}/100
+                  </Badge>
+                )}
                 <span className="text-muted-foreground text-sm">— Contract awarded</span>
               </div>
             </div>
           </motion.div>
 
+          <div className="flex gap-2 flex-wrap">
+            {winner.code && (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() =>
+                  downloadCode(winner.code!, winner.agent_name ?? winner.agent_id)
+                }
+              >
+                <Code className="size-4" />
+                Download HTML
+              </Button>
+            )}
+            {winner.asset_url && !winner.code && (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() =>
+                  downloadImage(
+                    winner.asset_url!,
+                    winner.agent_name ?? winner.agent_id
+                  )
+                }
+              >
+                <Download className="size-4" />
+                Download image
+              </Button>
+            )}
+            <Button variant="outline" className="flex-1 min-w-0" onClick={onStartOver}>
+              Start New Brief
+            </Button>
+          </div>
+
           <p className="text-sm text-muted-foreground text-center">
             Refinement and high-res delivery will appear here once the agent completes the work.
-            (Socket.io integration coming soon.)
           </p>
-
-          <Button variant="outline" className="w-full" onClick={onStartOver}>
-            Start New Brief
-          </Button>
         </CardContent>
       </Card>
     </motion.div>

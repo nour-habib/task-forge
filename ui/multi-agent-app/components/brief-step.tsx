@@ -44,7 +44,7 @@ export function BriefStep({ onSubmit, isSubmitting = false }: BriefStepProps) {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Textarea
-              placeholder="e.g., Minimalist logo for a space-themed cafe..."
+              placeholder="e.g., Minimalist logo for a coffee shop — or: Build a simple landing page (generates code)"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               className="min-h-[140px] resize-none text-base"

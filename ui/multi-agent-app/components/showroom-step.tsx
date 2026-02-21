@@ -1,13 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { LayoutGrid, Loader2 } from "lucide-react";
+import { LayoutGrid, Loader2, Download, Code } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Submission } from "@/lib/types";
+import { downloadImage, downloadCode } from "@/lib/download";
 
 interface ShowroomStepProps {
   prompt: string;
@@ -101,23 +102,36 @@ function ProposalCard({
   submission: Submission;
   onSelect: () => void;
 }) {
+  const agentName = submission.agent_name ?? submission.agent_id;
+  const hasCode = !!submission.code;
+  const hasImage = !!submission.asset_url && !hasCode;
+
   return (
     <motion.div
       whileHover={{ y: -4 }}
       className="group rounded-xl border bg-card overflow-hidden shadow-sm transition-shadow hover:shadow-md"
     >
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
-        {submission.asset_url ? (
+        {hasCode ? (
+          <div className="absolute inset-0 overflow-hidden">
+            <iframe
+              srcDoc={submission.code}
+              title={`Preview by ${agentName}`}
+              sandbox="allow-scripts"
+              className="absolute top-0 left-0 w-[400%] h-[400%] border-0 origin-top-left scale-[0.25]"
+            />
+          </div>
+        ) : submission.asset_url ? (
           submission.asset_url.startsWith("data:") ? (
             <img
               src={submission.asset_url}
-              alt={`Proposal by ${submission.agent_name ?? submission.agent_id}`}
+              alt={`Proposal by ${agentName}`}
               className="size-full object-cover transition-transform group-hover:scale-[1.02]"
             />
           ) : (
             <Image
               src={submission.asset_url}
-              alt={`Proposal by ${submission.agent_name ?? submission.agent_id}`}
+              alt={`Proposal by ${agentName}`}
               fill
               className="object-cover transition-transform group-hover:scale-[1.02]"
               sizes="(max-width: 768px) 100vw, 33vw"
@@ -132,20 +146,48 @@ function ProposalCard({
             No preview
           </div>
         )}
-        <Badge
-          variant="secondary"
-          className="absolute top-3 left-3 bg-background/90 backdrop-blur-sm"
-        >
-          {submission.agent_name ?? submission.agent_id}
-        </Badge>
+        <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
+          <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm shrink-0">
+            {agentName}
+          </Badge>
+          {submission.score != null && (
+            <Badge variant="outline" className="bg-background/90 backdrop-blur-sm shrink-0">
+              {(submission.score * 20).toFixed(0)}/100
+            </Badge>
+          )}
+        </div>
       </div>
       <div className="p-4 space-y-3">
         <p className="text-sm text-muted-foreground line-clamp-2">
-          {submission.agent_name ?? submission.agent_id} • Proposal
+          {submission.persona ?? agentName} • {hasCode ? "Code" : "Proposal"}
         </p>
-        <Button onClick={onSelect} className="w-full" size="sm">
-          Select as Winner
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          {hasCode && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 shrink-0"
+              onClick={() => downloadCode(submission.code!, agentName)}
+            >
+              <Code className="size-4" />
+              Download HTML
+            </Button>
+          )}
+          {hasImage && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 shrink-0"
+              onClick={() => downloadImage(submission.asset_url!, agentName)}
+            >
+              <Download className="size-4" />
+              Download
+            </Button>
+          )}
+          <Button onClick={onSelect} className="flex-1 min-w-0" size="sm">
+            Select as Winner
+          </Button>
+        </div>
       </div>
     </motion.div>
   );
