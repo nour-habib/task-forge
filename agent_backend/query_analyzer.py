@@ -53,7 +53,7 @@ class QueryAnalyzer:
 Output valid JSON only, with this exact shape (no extra fields):
 {
   "intent": "short_snake_case_label",
-  "task_type": "design" | "code" | "image" | "copy" | "mixed",
+  "task_type": "code" | "image" | "other",
   "requirements": ["requirement 1", "requirement 2"],
   "constraints": ["constraint 1"],
   "raw_query": "the original user query exactly as given"
