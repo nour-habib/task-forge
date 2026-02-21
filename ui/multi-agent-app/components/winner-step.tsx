@@ -45,27 +45,41 @@ export function WinnerStep({ prompt, winner, onStartOver }: WinnerStepProps) {
             transition={{ delay: 0.2 }}
             className="rounded-xl border overflow-hidden bg-card"
           >
-            <div className="relative aspect-video bg-muted">
+            <div className="relative aspect-video bg-muted min-h-[200px]">
               {winner.asset_url ? (
-                <Image
-                  src={winner.asset_url}
-                  alt={`Winner: ${winner.agent_name ?? winner.agent_id}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 672px"
-                />
+                <>
+                  {winner.asset_url.startsWith("data:") ? (
+                    <img
+                      src={winner.asset_url}
+                      alt={`Winner: ${winner.agent_name ?? winner.agent_id}`}
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src={winner.asset_url}
+                      alt={`Winner: ${winner.agent_name ?? winner.agent_id}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 672px"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                </>
+              ) : winner.proposal_text ? (
+                <div className="absolute inset-0 overflow-y-auto p-4 text-sm text-foreground">
+                  <p className="whitespace-pre-wrap">{winner.proposal_text}</p>
+                </div>
               ) : (
                 <div className="flex size-full items-center justify-center text-muted-foreground">
                   No preview
                 </div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-4 left-4 right-4 flex items-center gap-2">
-                <CheckCircle className="size-5 text-green-400" />
-                <span className="font-semibold text-white">
+                <CheckCircle className="size-5 text-green-500 shrink-0" />
+                <span className="font-semibold text-foreground">
                   {winner.agent_name ?? winner.agent_id}
                 </span>
-                <span className="text-white/80 text-sm">— Contract awarded</span>
+                <span className="text-muted-foreground text-sm">— Contract awarded</span>
               </div>
             </div>
           </motion.div>

@@ -108,13 +108,25 @@ function ProposalCard({
     >
       <div className="relative aspect-[4/3] bg-muted overflow-hidden">
         {submission.asset_url ? (
-          <Image
-            src={submission.asset_url}
-            alt={`Proposal by ${submission.agent_name ?? submission.agent_id}`}
-            fill
-            className="object-cover transition-transform group-hover:scale-[1.02]"
-            sizes="(max-width: 768px) 100vw, 33vw"
-          />
+          submission.asset_url.startsWith("data:") ? (
+            <img
+              src={submission.asset_url}
+              alt={`Proposal by ${submission.agent_name ?? submission.agent_id}`}
+              className="size-full object-cover transition-transform group-hover:scale-[1.02]"
+            />
+          ) : (
+            <Image
+              src={submission.asset_url}
+              alt={`Proposal by ${submission.agent_name ?? submission.agent_id}`}
+              fill
+              className="object-cover transition-transform group-hover:scale-[1.02]"
+              sizes="(max-width: 768px) 100vw, 33vw"
+            />
+          )
+        ) : submission.proposal_text ? (
+          <div className="absolute inset-0 overflow-y-auto p-4 text-sm text-foreground">
+            <p className="whitespace-pre-wrap">{submission.proposal_text}</p>
+          </div>
         ) : (
           <div className="flex size-full items-center justify-center text-muted-foreground">
             No preview
