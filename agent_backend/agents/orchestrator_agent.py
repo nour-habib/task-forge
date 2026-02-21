@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from typing import List, Protocol
 
 from agents.judge_agent import JudgeAgent
@@ -36,7 +37,9 @@ class OrchestratorAgent:
         Returns OrchestratorOutput with the 3 AgentOutput items and their judgments.
         """
         parsed = self.query_analyzer.analyze(query)
-        outputs = [agent.run(parsed) for agent in self.builder_agents]
+        with ThreadPoolExecutor(max_workers=len(self.builder_agents)) as executor:
+            futures = [executor.submit(agent.run, parsed) for agent in self.builder_agents]
+            outputs = [f.result() for f in futures]
         prompt_or_job = parsed.to_agent_prompt()
         judge_output = self.judge_agent.judge(outputs, prompt_or_job)
         # Attach judge's score to each AgentOutput

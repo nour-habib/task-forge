@@ -87,10 +87,11 @@ export async function createJob(req: CreateJobRequest): Promise<Job> {
     throw new Error(`createJob failed: ${res.status} ${res.statusText}${text ? ` - ${text}` : ""}`);
   }
 
-  const items = (await res.json()) as AgentOutputItem[];
+  const data = (await res.json()) as { items?: AgentOutputItem[] };
+  const items = Array.isArray(data?.items) ? data.items : [];
   const jobId = `build-${Date.now()}`;
 
-  const submissions: Submission[] = (Array.isArray(items) ? items : []).map((item, i) => ({
+  const submissions: Submission[] = items.map((item, i) => ({
     id: `sub-${jobId}-${item.agent_name}-${i}`,
     job_id: jobId,
     agent_id: item.agent_name,

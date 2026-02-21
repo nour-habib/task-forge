@@ -6,7 +6,7 @@ import { AppService } from './app.service';
 @Module({
   imports: [
     HttpModule.register({
-      timeout: 60000,
+      timeout: 300000,
       maxRedirects: 5,
     }),
   ],

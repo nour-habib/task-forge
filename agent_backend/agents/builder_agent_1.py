@@ -86,7 +86,6 @@ class BuilderAgent1:
                 prompt=image_prompt,
                 size=DALL_E_IMAGE_SIZE,
                 quality=IMAGE_MODEL_QUALITY,
-                response_format="b64_json",
             )
             b64_data = image_response.data[0].b64_json
             image_uri = f"data:image/png;base64,{b64_data}"
