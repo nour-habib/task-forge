@@ -23,9 +23,15 @@ export interface Submission {
   job_id: string;
   agent_id: string;
   agent_name?: string;
+  /** Agent persona (e.g. "The Minimalist") */
+  persona?: string;
   asset_url?: string;
   /** Text proposal from agent (e.g. from POST /build) */
   proposal_text?: string;
+  /** Generated HTML when task_type is code */
+  code?: string;
+  /** Judge's overall score (1-5) */
+  score?: number;
   status: SubmissionStatus;
   created_at?: string;
 }

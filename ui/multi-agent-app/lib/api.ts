@@ -14,6 +14,14 @@ interface AgentOutputItem {
   created_at?: string;
   prompt_or_job?: string | null;
   style_notes?: string | null;
+  score?: number | null;
+  extra?: { code?: string } | null;
+}
+
+/** Agent backend response (OrchestratorOutput) */
+interface BuildResponse {
+  items?: AgentOutputItem[];
+  judgments?: Array<{ agent_name: string; overall_score: number }>;
 }
 
 /** Client: use /api/build (same-origin, avoids CORS). Server proxies to NestJS. */
@@ -52,6 +60,7 @@ function createMockSubmissions(jobId: string): Submission[] {
     agent_id: agent.id,
     agent_name: agent.name,
     asset_url: MOCK_ASSETS[i],
+    score: 3.5 + i * 0.3,
     status: "pending" as const,
     created_at: new Date().toISOString(),
   }));
@@ -87,20 +96,28 @@ export async function createJob(req: CreateJobRequest): Promise<Job> {
     throw new Error(`createJob failed: ${res.status} ${res.statusText}${text ? ` - ${text}` : ""}`);
   }
 
-  const data = (await res.json()) as { items?: AgentOutputItem[] };
+  const data = (await res.json()) as BuildResponse;
   const items = Array.isArray(data?.items) ? data.items : [];
+  const judgments = data?.judgments ?? [];
   const jobId = `build-${Date.now()}`;
 
-  const submissions: Submission[] = items.map((item, i) => ({
-    id: `sub-${jobId}-${item.agent_name}-${i}`,
-    job_id: jobId,
-    agent_id: item.agent_name,
-    agent_name: item.agent_name.replace(/([A-Z])/g, " $1").trim(),
-    asset_url: item.image,
-    proposal_text: item.style_notes ?? undefined,
-    status: "pending" as const,
-    created_at: item.created_at ?? new Date().toISOString(),
-  }));
+  const submissions: Submission[] = items.map((item, i) => {
+    const judgment = judgments[i];
+    const score = item.score ?? judgment?.overall_score;
+    return {
+      id: `sub-${jobId}-${item.agent_name}-${i}`,
+      job_id: jobId,
+      agent_id: item.agent_name,
+      agent_name: item.agent_name.replace(/([A-Z])/g, " $1").trim(),
+      persona: item.persona ?? undefined,
+      asset_url: item.image,
+      proposal_text: item.style_notes ?? undefined,
+      code: item.extra?.code ?? undefined,
+      score: score ?? undefined,
+      status: "pending" as const,
+      created_at: item.created_at ?? new Date().toISOString(),
+    };
+  });
 
   buildCache.set(jobId, submissions);
 
