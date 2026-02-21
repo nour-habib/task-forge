@@ -7,6 +7,7 @@ from agents.builder_agent_1 import BuilderAgent1
 from agents.builder_agent_2 import BuilderAgent2
 from agents.builder_agent_3 import BuilderAgent3
 from agents.orchestrator_agent import OrchestratorAgent
+from models.agent_output import OrchestratorOutput
 
 app = FastAPI()
 
@@ -36,13 +37,8 @@ class QueryRequest(BaseModel):
     query: str
 
 
-class QueryResponse(BaseModel):
-    results: dict[str, str]
-
-
-@app.post("/orchestrate", response_model=QueryResponse)
-def orchestrate(request: QueryRequest) -> QueryResponse:
-    """Feed a query to the orchestrator agent and return responses from all builder agents."""
+@app.post("/orchestrate", response_model=OrchestratorOutput)
+def orchestrate(request: QueryRequest) -> OrchestratorOutput:
+    """Feed a query to the orchestrator agent and return the 3 AgentOutput items (builder agents 1, 2, 3)."""
     orchestrator = get_orchestrator()
-    results = orchestrator.run(request.query)
-    return QueryResponse(results=results)
+    return orchestrator.run(request.query)

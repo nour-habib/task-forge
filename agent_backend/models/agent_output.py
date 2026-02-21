@@ -29,3 +29,14 @@ class AgentOutput(BaseModel):
     )
 
     model_config = {"extra": "allow"}
+
+
+class OrchestratorOutput(BaseModel):
+    """Response model containing the 3 AgentOutput items from builder agents 1, 2, 3."""
+
+    items: list[AgentOutput] = Field(
+        ...,
+        min_length=3,
+        max_length=3,
+        description="The 3 AgentOutput items from builder agents 1, 2, 3",
+    )

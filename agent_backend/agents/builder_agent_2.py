@@ -1,5 +1,7 @@
 from openai import OpenAI
 
+from models.agent_output import AgentOutput
+
 
 class BuilderAgent2:
     """
@@ -27,13 +29,31 @@ class BuilderAgent2:
         self.name = "BuilderAgent2"
         self.persona = "The Bold Creative"
 
-    def run(self, query: str) -> str:
-        """Execute the given query and return the response."""
-        response = self.client.chat.completions.create(
+    def run(self, query: str) -> AgentOutput:
+        """Execute the given query and return AgentOutput with generated image."""
+        prompt_response = self.client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": self.SYSTEM_PROMPT},
+                {"role": "system", "content": self.SYSTEM_PROMPT + "\n\nCreate a detailed image generation prompt (1-2 sentences) for DALL-E that captures your bold creative design approach for this request. Output ONLY the prompt, nothing else."},
                 {"role": "user", "content": query},
             ],
         )
-        return response.choices[0].message.content
+        image_prompt = prompt_response.choices[0].message.content.strip()
+
+        image_response = self.client.images.generate(
+            model="dall-e-3",
+            prompt=image_prompt,
+            size="1024x1024",
+            response_format="b64_json",
+            quality="standard",
+        )
+        b64_data = image_response.data[0].b64_json
+        image_uri = f"data:image/png;base64,{b64_data}"
+
+        return AgentOutput(
+            image=image_uri,
+            agent_name=self.name,
+            persona=self.persona,
+            prompt_or_job=query,
+            style_notes=image_prompt,
+        )
