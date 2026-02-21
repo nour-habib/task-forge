@@ -1,13 +1,13 @@
 from typing import List, Protocol
 
 from models.agent_output import AgentOutput, OrchestratorOutput
-from query_analyzer import QueryAnalyzer
+from query_analyzer import QueryAnalyzer, StructuredQuery
 
 
 class BuilderAgent(Protocol):
-    """Protocol for builder agents that accept queries and return AgentOutput."""
+    """Protocol for builder agents that accept StructuredQuery and return AgentOutput."""
 
-    def run(self, query: str) -> AgentOutput: ...
+    def run(self, structured_query: StructuredQuery) -> AgentOutput: ...
 
 
 class OrchestratorAgent:
@@ -28,6 +28,5 @@ class OrchestratorAgent:
         Returns OrchestratorOutput containing the 3 AgentOutput items.
         """
         parsed = self.query_analyzer.analyze(query)
-        agent_prompt = parsed.to_agent_prompt()
-        outputs = [agent.run(agent_prompt) for agent in self.builder_agents]
+        outputs = [agent.run(parsed) for agent in self.builder_agents]
         return OrchestratorOutput(items=outputs)
