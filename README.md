@@ -1,5 +1,26 @@
 # MultiAgentApp
 
+## Quick Start
+
+```bash
+# 1. Run setup (installs deps, copies .env files)
+./scripts/setup.sh
+
+# 2. Add your OpenAI API key to .env
+# Edit .env and set OPENAI_API_KEY=sk-...
+
+# 3. (Optional) Start PostgreSQL for the NestJS backend
+docker compose up -d
+
+# 4. Run the full stack (agent + NestJS + UI)
+make dev-full
+# Or: cd ui/multi-agent-app && npm run dev:suite:full
+```
+
+Then open http://localhost:3000
+
+---
+
 ## Project Structure
 
 ```
@@ -15,11 +36,23 @@ MultiAgentApp/
 
 - Node.js (v18+)
 - Python (3.10+)
-- PostgreSQL
+- PostgreSQL (or use `docker compose up -d`)
 
 ---
 
-## 1. Agent Backend (Python / FastAPI)
+## Make Commands
+
+| Command      | Description                          |
+|-------------|--------------------------------------|
+| `make setup`| Run setup script                     |
+| `make dev`  | UI + NestJS only (mock agent)        |
+| `make dev-full` | Full stack: agent + NestJS + UI  |
+
+---
+
+## Manual Setup
+
+### 1. Agent Backend (Python / FastAPI)
 
 ```bash
 cd agent_backend
@@ -38,43 +71,50 @@ uvicorn main:app --reload
 
 ---
 
-## 2. NestJS Backend
+### 2. NestJS Backend
 
 ```bash
 cd backend/multi-agent-app
 
-# Install dependencies
+# Copy env and install
+cp .env.example .env
 npm install
 
 # Run in development mode
 npm run start:dev
 ```
 
-Configure your PostgreSQL connection in the `TypeOrmModule` inside `app.module.ts`:
+PostgreSQL connection is configured via `backend/multi-agent-app/.env`:
 
-```ts
-TypeOrmModule.forRoot({
-  type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'your_user',
-  password: 'your_password',
-  database: 'your_db',
-  entities: [],
-  synchronize: true,
-})
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=postgres
 ```
 
 ---
 
-## 3. UI (Next.js)
+### 3. UI (Next.js)
 
 ```bash
 cd ui/multi-agent-app
 
-# Install dependencies
+# Copy env and install
+cp .env.local.example .env.local
 npm install
 
 # Run in development mode
 npm run dev
 ```
+
+---
+
+## Docker (PostgreSQL)
+
+```bash
+docker compose up -d
+```
+
+Uses default credentials: `postgres` / `postgres` on port 5432.
