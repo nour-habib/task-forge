@@ -7,7 +7,8 @@ from agents.builder_agent_1 import BuilderAgent1
 from agents.builder_agent_2 import BuilderAgent2
 from agents.builder_agent_3 import BuilderAgent3
 from agents.orchestrator_agent import OrchestratorAgent
-from models.agent_output import OrchestratorOutput
+from models.agent_output import AgentOutput
+from query_analyzer import QueryAnalyzer
 
 app = FastAPI()
 
@@ -29,7 +30,8 @@ def get_orchestrator() -> OrchestratorAgent:
             BuilderAgent2(api_key),
             BuilderAgent3(api_key),
         ]
-        _orchestrator = OrchestratorAgent(builders)
+        query_analyzer = QueryAnalyzer(api_key)
+        _orchestrator = OrchestratorAgent(builders, query_analyzer)
     return _orchestrator
 
 
@@ -37,8 +39,9 @@ class QueryRequest(BaseModel):
     query: str
 
 
-@app.post("/orchestrate", response_model=OrchestratorOutput)
-def orchestrate(request: QueryRequest) -> OrchestratorOutput:
-    """Feed a query to the orchestrator agent and return the 3 AgentOutput items (builder agents 1, 2, 3)."""
+@app.post("/orchestrate", response_model=list[AgentOutput])
+def orchestrate(request: QueryRequest) -> list[AgentOutput]:
+    """Feed a query to the orchestrator agent and return an array of 3 AgentOutput objects for NestJS."""
     orchestrator = get_orchestrator()
-    return orchestrator.run(request.query)
+    result = orchestrator.run(request.query)
+    return result.items
