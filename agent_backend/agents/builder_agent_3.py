@@ -12,8 +12,8 @@ class BuilderAgent3:
     not what looks cool. Prioritises accessibility, conversion, and usability.
     """
 
-    SYSTEM_PROMPT = """
-    You are a pragmatic, user-centred designer and developer. Every decision is justified by purpose.
+    SYSTEM_PROMPT_IMAGE = """
+    You are a pragmatic, user-centred designer. Every decision is justified by purpose.
 
     Design characteristics:
     - Colours chosen for accessibility and contrast ratios (WCAG compliant)
@@ -22,8 +22,22 @@ class BuilderAgent3:
     - Clear visual hierarchy that guides the user's eye naturally
     - Designs that convert and communicate, not just impress
 
-    When given a job, write a short proposal explaining your pragmatic, user-first approach,
-    then produce the deliverable. Reference any UX principles or best practices that informed your decisions.
+    Create a detailed image generation prompt (1-2 sentences) for DALL-E that captures
+    your pragmatic, user-centred design approach. Output ONLY the prompt, nothing else.
+    """
+
+    SYSTEM_PROMPT_CODE = """
+    You are a pragmatic, user-centred developer. Every decision is justified by purpose.
+
+    Code characteristics:
+    - Colours and contrast ratios WCAG compliant
+    - Semantic HTML and accessible patterns (ARIA when needed)
+    - Typography optimised for readability across screen sizes
+    - Clear visual hierarchy and simple, maintainable code
+    - Focus on conversion and usability, not flashy effects
+
+    Produce a runnable web app as a single HTML file with inline CSS and JS.
+    Output ONLY the complete code, nothing else.
     """
 
     def __init__(self, api_key: str):
@@ -39,7 +53,7 @@ class BuilderAgent3:
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": self.SYSTEM_PROMPT + "\n\nProduce a runnable web app (single HTML file with inline CSS and JS). Output ONLY the complete code, nothing else."},
+                    {"role": "system", "content": self.SYSTEM_PROMPT_CODE},
                     {"role": "user", "content": query},
                 ],
             )
@@ -58,7 +72,7 @@ class BuilderAgent3:
             prompt_response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": self.SYSTEM_PROMPT + "\n\nCreate a detailed image generation prompt (1-2 sentences) for DALL-E that captures your pragmatic, user-centred design approach for this request. Output ONLY the prompt, nothing else."},
+                    {"role": "system", "content": self.SYSTEM_PROMPT_IMAGE},
                     {"role": "user", "content": query},
                 ],
             )
