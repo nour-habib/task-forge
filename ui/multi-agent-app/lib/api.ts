@@ -1,12 +1,23 @@
 /**
  * Centralized API module for multi-agent task application.
- * Uses mock stubs until Nimesh's Next.js service/controller endpoints are merged.
- * Replace fetch base URL and paths when real endpoints are available.
+ * - Mock mode (default): uses local stubs.
+ * - Real mode (NEXT_PUBLIC_USE_MOCK=false): calls NestJS POST /build via /api/build proxy.
  */
 
 import type { Job, Submission, CreateJobRequest, SelectWinnerRequest } from "./types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+/** Agent backend response item (AgentOutput) */
+interface AgentOutputItem {
+  image: string;
+  agent_name: string;
+  persona?: string;
+  created_at?: string;
+  prompt_or_job?: string | null;
+  style_notes?: string | null;
+}
+
+/** Client: use /api/build (same-origin, avoids CORS). Server proxies to NestJS. */
+const BUILD_URL = typeof window !== "undefined" ? "/api/build" : `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/build`;
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK !== "false";
 
 // ---------------------------------------------------------------------------
@@ -47,30 +58,61 @@ function createMockSubmissions(jobId: string): Submission[] {
 }
 
 // ---------------------------------------------------------------------------
+// Build cache (real backend: POST /build returns results synchronously)
+// ---------------------------------------------------------------------------
+
+const buildCache = new Map<string, Submission[]>();
+
+// ---------------------------------------------------------------------------
 // API functions
 // ---------------------------------------------------------------------------
 
 /**
  * Create a new job (brief).
- * POST /api/jobs or equivalent
+ * Mock: returns synthetic job. Real: POST /build, caches agent results.
  */
 export async function createJob(req: CreateJobRequest): Promise<Job> {
   if (USE_MOCK) {
     await new Promise((r) => setTimeout(r, 800));
     return createMockJob(req.prompt);
   }
-  const res = await fetch(`${API_BASE}/api/jobs`, {
+
+  const res = await fetch(BUILD_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(req),
+    body: JSON.stringify({ prompt: req.prompt }),
   });
-  if (!res.ok) throw new Error(`createJob failed: ${res.statusText}`);
-  return res.json();
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`createJob failed: ${res.status} ${res.statusText}${text ? ` - ${text}` : ""}`);
+  }
+
+  const items = (await res.json()) as AgentOutputItem[];
+  const jobId = `build-${Date.now()}`;
+
+  const submissions: Submission[] = (Array.isArray(items) ? items : []).map((item, i) => ({
+    id: `sub-${jobId}-${item.agent_name}-${i}`,
+    job_id: jobId,
+    agent_id: item.agent_name,
+    agent_name: item.agent_name.replace(/([A-Z])/g, " $1").trim(),
+    asset_url: item.image,
+    proposal_text: item.style_notes ?? undefined,
+    status: "pending" as const,
+    created_at: item.created_at ?? new Date().toISOString(),
+  }));
+
+  buildCache.set(jobId, submissions);
+
+  return {
+    id: jobId,
+    status: "in_progress",
+    requirements_json: { prompt: req.prompt },
+    created_at: new Date().toISOString(),
+  };
 }
 
 /**
  * Get job status and details.
- * GET /api/jobs/:id
  */
 export async function getJob(jobId: string): Promise<Job> {
   if (USE_MOCK) {
@@ -82,39 +124,35 @@ export async function getJob(jobId: string): Promise<Job> {
       created_at: new Date().toISOString(),
     };
   }
-  const res = await fetch(`${API_BASE}/api/jobs/${jobId}`);
-  if (!res.ok) throw new Error(`getJob failed: ${res.statusText}`);
-  return res.json();
+  const cached = buildCache.get(jobId);
+  if (!cached) throw new Error(`Job ${jobId} not found`);
+  return {
+    id: jobId,
+    status: "in_progress",
+    requirements_json: { prompt: "" },
+    created_at: new Date().toISOString(),
+  };
 }
 
 /**
  * Get submissions for a job.
- * GET /api/jobs/:id/submissions
+ * Mock: synthetic. Real: cached from createJob.
  */
 export async function getSubmissions(jobId: string): Promise<Submission[]> {
   if (USE_MOCK) {
     await new Promise((r) => setTimeout(r, 500));
     return createMockSubmissions(jobId);
   }
-  const res = await fetch(`${API_BASE}/api/jobs/${jobId}/submissions`);
-  if (!res.ok) throw new Error(`getSubmissions failed: ${res.statusText}`);
-  return res.json();
+  return buildCache.get(jobId) ?? [];
 }
 
 /**
- * Select winner and trigger refinement.
- * POST /api/jobs/:id/winner
+ * Select winner. No backend endpoint yet; returns success.
  */
 export async function selectWinner(req: SelectWinnerRequest): Promise<{ success: boolean }> {
   if (USE_MOCK) {
     await new Promise((r) => setTimeout(r, 600));
     return { success: true };
   }
-  const res = await fetch(`${API_BASE}/api/jobs/${req.job_id}/winner`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ submission_id: req.submission_id }),
-  });
-  if (!res.ok) throw new Error(`selectWinner failed: ${res.statusText}`);
-  return res.json();
+  return { success: true };
 }
