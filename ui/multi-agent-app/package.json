@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:backend": "NEXT_PUBLIC_USE_MOCK=false NEXT_PUBLIC_API_URL=http://localhost:3001 next dev",
+    "dev:suite": "concurrently -n nest,next -c blue,green \"cd ../../backend/multi-agent-app && PORT=3001 npm run start:dev\" \"NEXT_PUBLIC_USE_MOCK=false NEXT_PUBLIC_API_URL=http://localhost:3001 next dev\"",
+    "dev:suite:full": "dotenv -e ../../.env -- concurrently -n agent,nest,next -c magenta,blue,green \"(cd ../../agent_backend && ./venv/bin/uvicorn main:app --reload --host 0.0.0.0)\" \"cd ../../backend/multi-agent-app && PORT=3001 npm run start:dev\" \"NEXT_PUBLIC_USE_MOCK=false NEXT_PUBLIC_API_URL=http://localhost:3001 next dev\"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -24,6 +27,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "shadcn": "^3.8.5",

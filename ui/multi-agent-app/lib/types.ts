@@ -24,6 +24,8 @@ export interface Submission {
   agent_id: string;
   agent_name?: string;
   asset_url?: string;
+  /** Text proposal from agent (e.g. from POST /build) */
+  proposal_text?: string;
   status: SubmissionStatus;
   created_at?: string;
 }

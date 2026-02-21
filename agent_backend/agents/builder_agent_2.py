@@ -1,5 +1,6 @@
 from openai import OpenAI
 
+from constants import DALL_E_IMAGE_SIZE, IMAGE_MODEL
 from models.agent_output import AgentOutput
 from query_analyzer import StructuredQuery
 
