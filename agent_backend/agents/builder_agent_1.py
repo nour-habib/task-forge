@@ -1,5 +1,6 @@
 from openai import OpenAI
 
+from constants import DALL_E_IMAGE_SIZE, DALL_E_MODEL
 from models.agent_output import AgentOutput
 
 
@@ -44,11 +45,10 @@ class BuilderAgent1:
 
         # Generate image with DALL-E
         image_response = self.client.images.generate(
-            model="dall-e-3",
+            model=DALL_E_MODEL,
             prompt=image_prompt,
-            size="1024x1024",
+            size=DALL_E_IMAGE_SIZE,
             response_format="b64_json",
-            quality="standard",
         )
         b64_data = image_response.data[0].b64_json
         image_uri = f"data:image/png;base64,{b64_data}"
