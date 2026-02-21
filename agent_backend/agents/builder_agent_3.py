@@ -1,6 +1,6 @@
 from openai import OpenAI
 
-from constants import DALL_E_IMAGE_SIZE, IMAGE_MODEL
+from constants import DALL_E_IMAGE_SIZE, IMAGE_MODEL, IMAGE_MODEL_QUALITY
 from models.agent_output import AgentOutput
 from query_analyzer import StructuredQuery
 
@@ -87,6 +87,15 @@ class BuilderAgent3:
             )
             b64_data = image_response.data[0].b64_json
             image_uri = f"data:image/png;base64,{b64_data}"
+        image_response = self.client.images.generate(
+            model=IMAGE_MODEL,
+            prompt=image_prompt,
+            size=DALL_E_IMAGE_SIZE,
+            quality=IMAGE_MODEL_QUALITY,
+            response_format="b64_json",
+        )
+        b64_data = image_response.data[0].b64_json
+        image_uri = f"data:image/png;base64,{b64_data}"
 
             return AgentOutput(
                 image=image_uri,
