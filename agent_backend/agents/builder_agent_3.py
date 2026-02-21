@@ -33,3 +33,14 @@ class BuilderAgent3:
         self.client = OpenAI(api_key=api_key)
         self.name = "BuilderAgent3"
         self.persona = "The Pragmatist"
+
+    def run(self, query: str) -> str:
+        """Execute the given query and return the response."""
+        response = self.client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": self.SYSTEM_PROMPT},
+                {"role": "user", "content": query},
+            ],
+        )
+        return response.choices[0].message.content
