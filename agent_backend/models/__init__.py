@@ -1,3 +1,3 @@
-from .agent_output import AgentImageOutput, AgentOutputMetadata
+from .agent_output import AgentOutput
 
-__all__ = ["AgentImageOutput", "AgentOutputMetadata"]
+__all__ = ["AgentOutput"]

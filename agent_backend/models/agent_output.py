@@ -9,9 +9,12 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
-class AgentOutputMetadata(BaseModel):
+class AgentOutput(BaseModel):
     """Metadata accompanying an agent-generated image."""
 
+    image: str = Field(
+        ..., description="Image as base64-encoded string (e.g. data URI or raw base64)"
+    )
     agent_name: str = Field(
         ..., description="Name of the agent that produced the output"
     )
@@ -26,14 +29,3 @@ class AgentOutputMetadata(BaseModel):
     )
 
     model_config = {"extra": "allow"}
-
-
-class AgentImageOutput(BaseModel):
-    """Return object for agents: image data plus metadata."""
-
-    image: str = Field(
-        ..., description="Image as base64-encoded string (e.g. data URI or raw base64)"
-    )
-    metadata: AgentOutputMetadata = Field(..., description="Metadata for the image")
-
-    model_config = {"extra": "forbid"}
