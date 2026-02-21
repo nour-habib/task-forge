@@ -82,25 +82,14 @@ class BuilderAgent1:
             image_prompt = (prompt_response.choices[0].message.content or "").strip()
 
             image_response = self.client.images.generate(
-                model="dall-e-3",
+                model=IMAGE_MODEL,
                 prompt=image_prompt,
-                size="1024x1024",
+                size=DALL_E_IMAGE_SIZE,
+                quality=IMAGE_MODEL_QUALITY,
                 response_format="b64_json",
-                quality="standard",
             )
             b64_data = image_response.data[0].b64_json
             image_uri = f"data:image/png;base64,{b64_data}"
-        # Generate image with DALL-E
-        image_response = self.client.images.generate(
-            model=IMAGE_MODEL,
-            prompt=image_prompt,
-            size=DALL_E_IMAGE_SIZE,
-            quality=IMAGE_MODEL_QUALITY,
-            response_format="b64_json",
-        )
-        b64_data = image_response.data[0].b64_json
-        image_uri = f"data:image/png;base64,{b64_data}"
-
             return AgentOutput(
                 image=image_uri,
                 agent_name=self.name,

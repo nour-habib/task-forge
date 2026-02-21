@@ -8,6 +8,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from models.judgment import AgentJudgment
+
 
 class AgentOutput(BaseModel):
     """Metadata accompanying an agent-generated image."""
@@ -27,16 +29,25 @@ class AgentOutput(BaseModel):
     extra: dict[str, Any] = Field(
         default_factory=dict, description="Additional key-value metadata"
     )
+    score: float | None = Field(
+        None, description="Judge's overall score (1-5) for this output"
+    )
 
     model_config = {"extra": "allow"}
 
 
 class OrchestratorOutput(BaseModel):
-    """Response model containing the 3 AgentOutput items from builder agents 1, 2, 3."""
+    """Response model containing the 3 AgentOutput items and their judgments."""
 
     items: list[AgentOutput] = Field(
         ...,
         min_length=3,
         max_length=3,
         description="The 3 AgentOutput items from builder agents 1, 2, 3",
+    )
+    judgments: list[AgentJudgment] = Field(
+        ...,
+        min_length=3,
+        max_length=3,
+        description="JudgeAgent ratings for each of the 3 builder outputs",
     )
