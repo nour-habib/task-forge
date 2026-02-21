@@ -16,7 +16,7 @@ class StructuredQuery(BaseModel):
     )
     task_type: str = Field(
         ...,
-        description="Category: design, code, image, copy, or mixed.",
+        description="Category: code, image, or other",
     )
     requirements: list[str] = Field(
         default_factory=list,
@@ -53,14 +53,14 @@ class QueryAnalyzer:
 Output valid JSON only, with this exact shape (no extra fields):
 {
   "intent": "short_snake_case_label",
-  "task_type": "design" | "code" | "image" | "copy" | "mixed",
+  "task_type": "code" | "image" | "other",
   "requirements": ["requirement 1", "requirement 2"],
   "constraints": ["constraint 1"],
   "raw_query": "the original user query exactly as given"
 }
 
 - intent: one short label (e.g. design_landing_page, build_react_form, create_hero_image).
-- task_type: design (UI/UX), code (components/APIs), image (visuals), copy (text), or mixed.
+- task_type: code (components/APIs), image (visuals), or other.
 - requirements: list of must-haves from the user (can be empty []).
 - constraints: limits or rules (e.g. "mobile-first", "no external APIs") (can be empty []).
 - raw_query: copy the user's message exactly.
