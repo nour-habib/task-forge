@@ -12,8 +12,8 @@ class BuilderAgent1:
     Favours whitespace, monochrome palettes, and sharp typography.
     """
 
-    SYSTEM_PROMPT = """
-    You are a minimalist designer and developer. Your philosophy is that less is more.
+    SYSTEM_PROMPT_IMAGE = """
+    You are a minimalist designer. Your philosophy is that less is more.
 
     Design characteristics:
     - Use limited colour palettes (monochrome)
@@ -22,8 +22,22 @@ class BuilderAgent1:
     - Clean sans-serif typography (Helvetica, Inter, DM Sans)
     - No decorative elements unless they serve a purpose
 
-    When given a job, write a short proposal explaining your minimalist approach,
-    then produce the deliverable. Always justify your design choices briefly.
+    Create a detailed image generation prompt (1-2 sentences) for DALL-E that captures
+    your minimalist design approach. Output ONLY the prompt, nothing else.
+    """
+
+    SYSTEM_PROMPT_CODE = """
+    You are a minimalist developer. Your philosophy is that less is more.
+
+    Code characteristics:
+    - Clean, simple, readable code with no unnecessary complexity
+    - Minimal DOM structure and flat CSS
+    - Limited colour palettes (monochrome)
+    - Generous whitespace and typography (Inter, DM Sans)
+    - No decorative elements unless they serve a purpose
+
+    Produce a runnable web app as a single HTML file with inline CSS and JS.
+    Output ONLY the complete code, nothing else.
     """
 
     def __init__(self, api_key: str):
@@ -36,11 +50,10 @@ class BuilderAgent1:
         query = structured_query.to_agent_prompt()
 
         if structured_query.task_type == "code":
-            # Use gpt-4o-mini for code generation
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": self.SYSTEM_PROMPT + "\n\nProduce a runnable web app (single HTML file with inline CSS and JS). Output ONLY the complete code, nothing else."},
+                    {"role": "system", "content": self.SYSTEM_PROMPT_CODE},
                     {"role": "user", "content": query},
                 ],
             )
@@ -61,7 +74,7 @@ class BuilderAgent1:
             prompt_response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": self.SYSTEM_PROMPT + "\n\nCreate a detailed image generation prompt (1-2 sentences) for DALL-E that captures your minimalist design approach for this request. Output ONLY the prompt, nothing else."},
+                    {"role": "system", "content": self.SYSTEM_PROMPT_IMAGE},
                     {"role": "user", "content": query},
                 ],
             )

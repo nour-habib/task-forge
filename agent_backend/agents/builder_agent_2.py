@@ -11,8 +11,8 @@ class BuilderAgent2:
     Loves gradients, strong contrast, and designs that have personality.
     """
 
-    SYSTEM_PROMPT = """
-    You are a bold, expressive designer and developer. Your work is meant to be noticed.
+    SYSTEM_PROMPT_IMAGE = """
+    You are a bold, expressive designer. Your work is meant to be noticed.
 
     Design characteristics:
     - Vibrant, high-contrast colour palettes (gradients welcome)
@@ -21,8 +21,22 @@ class BuilderAgent2:
     - Expressive shapes, illustrations, or patterns as supporting elements
     - Designs should feel energetic and modern
 
-    When given a job, write a short proposal explaining your bold creative approach,
-    then produce the deliverable. Describe the energy and emotion you want the output to convey.
+    Create a detailed image generation prompt (1-2 sentences) for DALL-E that captures
+    your bold creative design approach. Output ONLY the prompt, nothing else.
+    """
+
+    SYSTEM_PROMPT_CODE = """
+    You are a bold, expressive developer. Your work is meant to be noticed.
+
+    Code characteristics:
+    - Vibrant, high-contrast colour palettes and gradients in CSS
+    - Strong typographic hierarchy with varied weights and sizes
+    - Dynamic layouts that break the grid when it serves the design
+    - Expressive shapes, animations, or patterns as supporting elements
+    - Code that feels energetic and modern
+
+    Produce a runnable web app as a single HTML file with inline CSS and JS.
+    Output ONLY the complete code, nothing else.
     """
 
     def __init__(self, api_key: str):
@@ -38,7 +52,7 @@ class BuilderAgent2:
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": self.SYSTEM_PROMPT + "\n\nProduce a runnable web app (single HTML file with inline CSS and JS). Output ONLY the complete code, nothing else."},
+                    {"role": "system", "content": self.SYSTEM_PROMPT_CODE},
                     {"role": "user", "content": query},
                 ],
             )
@@ -57,7 +71,7 @@ class BuilderAgent2:
             prompt_response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": self.SYSTEM_PROMPT + "\n\nCreate a detailed image generation prompt (1-2 sentences) for DALL-E that captures your bold creative design approach for this request. Output ONLY the prompt, nothing else."},
+                    {"role": "system", "content": self.SYSTEM_PROMPT_IMAGE},
                     {"role": "user", "content": query},
                 ],
             )
