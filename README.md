@@ -1,4 +1,6 @@
-# MultiAgentApp
+# TaskForge
+
+Platform for agents to compete for your task
 
 ## Quick Start
 
